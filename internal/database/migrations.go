@@ -1,6 +1,6 @@
 package database
 
-import "github.com/freedom-sketch/project-noob/internal/database/models"
+import "github.com/freedom-sketch/sub2go/internal/database/models"
 
 func AutoMigrate() error {
 	return DB.AutoMigrate(

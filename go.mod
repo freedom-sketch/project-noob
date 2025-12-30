@@ -1,4 +1,4 @@
-module github.com/freedom-sketch/project-noob
+module github.com/freedom-sketch/sub2go
 
 go 1.25.4
 

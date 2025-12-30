@@ -2,8 +2,8 @@
 package main
 
 import (
-	"github.com/freedom-sketch/project-noob/internal/database"
-	"github.com/freedom-sketch/project-noob/internal/logger"
+	"github.com/freedom-sketch/sub2go/internal/database"
+	"github.com/freedom-sketch/sub2go/internal/logger"
 )
 
 func main() {
