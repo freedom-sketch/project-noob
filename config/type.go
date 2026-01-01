@@ -1,9 +1,9 @@
 package config
 
-type SubscriptionMetaData struct {
+type Subscription struct {
 	ProfileUpdateInterval int    `json:"profile-update-interval"`
 	ProfileTitle          string `json:"profile-title"`
-	SupportUrl            string `json:"support-url"`
+	SupportURL            string `json:"support-url"`
 	ProfileWebPageUrl     string `json:"profile-web-page-url"`
 	Announce              string `json:"announce"`
 }
@@ -19,7 +19,7 @@ type Logging struct {
 }
 
 type Config struct {
-	API          API                  `json:"api"`
-	Subscription SubscriptionMetaData `json:"subscription"`
-	Logging      Logging              `json:"logging"`
+	API          API          `json:"api"`
+	Subscription Subscription `json:"subscription"`
+	Logging      Logging      `json:"logging"`
 }
