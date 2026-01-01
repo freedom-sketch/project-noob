@@ -9,16 +9,18 @@ import (
 )
 
 var Log *log.Logger
+var logFile *os.File
 
 func Init(cfg config.Logging) error {
 	if err := os.MkdirAll("logs", 0755); err != nil {
 		return err
 	}
 
-	file, err := os.OpenFile("logs/"+cfg.FileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	f, err := os.OpenFile("logs/"+cfg.FileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
+	logFile = f
 
 	Log = log.New()
 
@@ -32,7 +34,17 @@ func Init(cfg config.Logging) error {
 		lvl = log.InfoLevel
 	}
 	Log.SetLevel(lvl)
-	Log.SetOutput(io.MultiWriter(os.Stdout, file))
+	Log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 
 	return nil
+}
+
+func Close() error {
+	if logFile == nil {
+		return nil
+	}
+	err := logFile.Close()
+	logFile = nil
+
+	return err
 }

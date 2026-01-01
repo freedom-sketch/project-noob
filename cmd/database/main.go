@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/freedom-sketch/sub2go/config"
-	"github.com/freedom-sketch/sub2go/internal/database"
 	"github.com/freedom-sketch/sub2go/internal/logger"
 )
 
@@ -22,11 +21,7 @@ func main() {
 		log.Fatal("Failed to initialize logging", err)
 	}
 	log := logger.Log
-
-	if err := database.Connect(); err != nil {
-		log.Fatal("Connect failed:", err)
-	}
-	log.Info("✅ Successful connection to the database")
+	defer logger.Close()
 
 	prettyJSON, err := json.MarshalIndent(cfg, "", "    ")
 	if err != nil {

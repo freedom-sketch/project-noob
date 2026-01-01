@@ -1,9 +1,12 @@
 package database
 
-import "github.com/freedom-sketch/sub2go/internal/database/models"
+import (
+	"github.com/freedom-sketch/sub2go/internal/database/models"
+	"gorm.io/gorm"
+)
 
-func AutoMigrate() error {
-	return DB.AutoMigrate(
+func AutoMigrate(db *gorm.DB) error {
+	return db.AutoMigrate(
 		&models.User{},
 		&models.Admin{},
 		&models.Subscription{},
