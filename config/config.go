@@ -5,17 +5,17 @@ import (
 	"os"
 )
 
-func Load(path string) (Config, error) {
+// Loads data from the configuration into a structure and returns a pointer to it
+func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return Config{}, err
+		return nil, err
 	}
 
-	cfg := Config{}
-
+	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return cfg, err
+		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }

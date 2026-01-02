@@ -6,6 +6,7 @@ type Subscription struct {
 	SupportURL            string `json:"support-url"`
 	ProfileWebPageUrl     string `json:"profile-web-page-url"`
 	Announce              string `json:"announce"`
+	AnnounceURL           string `json:"announce-url"`
 }
 
 type API struct {

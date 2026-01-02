@@ -1,4 +1,4 @@
-package api
+package happ
 
 import (
 	"bytes"
@@ -9,7 +9,8 @@ import (
 
 const encryptionURL = "https://crypto.happ.su/api.php"
 
-func EncryptString(plaintext string) (string, error) {
+// Encrypts a string using RSA-4096
+func Encrypt(plaintext string) (string, error) {
 	reqBody, err := json.Marshal(Request{URL: plaintext})
 	if err != nil {
 		return "", err

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/freedom-sketch/sub2go/internal/api"
+	"github.com/freedom-sketch/sub2go/internal/api/happ"
 )
 
 func main() {
 	url := "https://example.com"
 
-	encrypted, err := api.EncryptString(url)
+	encrypted, err := happ.Encrypt(url)
 	if err != nil {
 		log.Fatal(err)
 	}
