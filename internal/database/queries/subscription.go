@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Creates a subscription
+// CreateSubscription creates a new subscription
 func CreateSubscription(ctx context.Context, db *gorm.DB, sub *models.Subscription) error {
 	if sub == nil {
 		return fmt.Errorf("subscription is nil")
@@ -19,23 +19,28 @@ func CreateSubscription(ctx context.Context, db *gorm.DB, sub *models.Subscripti
 	return db.WithContext(ctx).Create(sub).Error
 }
 
-// Returns the subscription structure by subscription UserID
-func GetSubscriptionByUserID(ctx context.Context, db *gorm.DB, userID int64) (*models.Subscription, error) {
+// GetSubscriptionByUserUUID returns the subscription for the given user UUID
+func GetSubscriptionByUserUUID(ctx context.Context, db *gorm.DB, userUUID string) (*models.Subscription, error) {
 	var sub models.Subscription
 	err := db.WithContext(ctx).
-		Where("user_id = ?", userID).
+		Where("user_uuid = ?", userUUID).
 		First(&sub).Error
+
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // или return nil, fmt.Errorf("subscription not found") — по вкусу
+		}
 		return nil, err
 	}
+
 	return &sub, nil
 }
 
-// Checks if a subscription is active for the user
-func IsSubscriptionActive(ctx context.Context, db *gorm.DB, userID int64) (bool, error) {
+// IsSubscriptionActive checks if the subscription is currently active for the user
+func IsSubscriptionActive(ctx context.Context, db *gorm.DB, userUUID string) (bool, error) {
 	var sub models.Subscription
 	err := db.WithContext(ctx).
-		Where("user_id = ?", userID).
+		Where("user_uuid = ?", userUUID).
 		First(&sub).Error
 
 	if err != nil {
@@ -48,21 +53,21 @@ func IsSubscriptionActive(ctx context.Context, db *gorm.DB, userID int64) (bool,
 	return time.Now().Before(sub.EndDate), nil
 }
 
-// Extends a subscription for a specified number of days.
-// If there is no subscription or it is not found, it returns an error
-func ExtendSubscription(ctx context.Context, db *gorm.DB, userID int64, days int) error {
+// ExtendSubscription extends the subscription by the specified number of days
+// Returns error if subscription not found or update failed
+func ExtendSubscription(ctx context.Context, db *gorm.DB, userUUID string, days int) error {
 	if days <= 0 {
 		return fmt.Errorf("the number of days must be positive")
 	}
 
 	var sub models.Subscription
 	err := db.WithContext(ctx).
-		Where("user_id = ?", userID).
+		Where("user_uuid = ?", userUUID).
 		First(&sub).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("subscription for user %d not found", userID)
+			return fmt.Errorf("subscription for user %s not found", userUUID)
 		}
 		return err
 	}
@@ -78,7 +83,7 @@ func ExtendSubscription(ctx context.Context, db *gorm.DB, userID int64, days int
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("the subscription was not renewed")
+		return fmt.Errorf("subscription was not updated (possibly concurrent modification)")
 	}
 
 	return nil
