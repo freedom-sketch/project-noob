@@ -7,6 +7,7 @@ import (
 
 	"github.com/freedom-sketch/sub2go/internal/database"
 	"github.com/freedom-sketch/sub2go/internal/database/models"
+	"github.com/google/uuid"
 )
 
 func TestCreateAndGetSubscription(t *testing.T) {
@@ -17,33 +18,46 @@ func TestCreateAndGetSubscription(t *testing.T) {
 
 	ctx := context.Background()
 
+	userUUID := uuid.New().String()
+
 	user := models.User{
-		UserID: 123,
+		UUID: userUUID,
 	}
-	err = db.WithContext(ctx).Create(&user).Error
-	if err != nil {
+	if err := db.WithContext(ctx).Create(&user).Error; err != nil {
 		t.Fatalf("Failed to create user: %v", err)
 	}
 
 	now := time.Now().Truncate(time.Second)
+	endDate := now.Add(30 * 24 * time.Hour)
+
 	sub := &models.Subscription{
-		UserID:    user.UserID,
+		UserUUID:  user.UUID,
 		StartDate: now,
-		EndDate:   now.Add(30 * 24 * time.Hour),
+		EndDate:   endDate,
+		Email:     "test@example.com",
 	}
 
 	if err := CreateSubscription(ctx, db, sub); err != nil {
 		t.Fatalf("Error creating subscription: %v", err)
 	}
 
-	got, err := GetSubscriptionByUserID(ctx, db, user.UserID)
+	got, err := GetSubscriptionByUserUUID(ctx, db, user.UUID)
 	if err != nil {
 		t.Fatalf("Failed to get subscription: %v", err)
 	}
-	t.Logf("Subscription created and received:: %+v", got)
+
+	t.Logf("Subscription created and received: %+v", got)
 
 	if !got.StartDate.Equal(now) {
-		t.Errorf("StartDate does not match: expected %v, received %v", now, got.StartDate)
+		t.Errorf("StartDate does not match: expected %v, got %v", now, got.StartDate)
+	}
+
+	if !got.EndDate.Equal(endDate) {
+		t.Errorf("EndDate does not match: expected %v, got %v", endDate, got.EndDate)
+	}
+
+	if got.UserUUID != user.UUID {
+		t.Errorf("UserUUID does not match: expected %s, got %s", user.UUID, got.UserUUID)
 	}
 }
 
@@ -55,36 +69,39 @@ func TestExtendSubscription(t *testing.T) {
 
 	ctx := context.Background()
 
+	userUUID := uuid.New().String()
+
 	user := models.User{
-		UserID: 123,
+		UUID: userUUID,
 	}
-	err = db.WithContext(ctx).Create(&user).Error
-	if err != nil {
+	if err := db.WithContext(ctx).Create(&user).Error; err != nil {
 		t.Fatalf("Failed to create user: %v", err)
 	}
 
 	now := time.Now().Truncate(time.Second)
-	endDate := now.Add(30 * 24 * time.Hour)
+	initialEnd := now.Add(30 * 24 * time.Hour)
+
 	sub := &models.Subscription{
-		UserID:    user.UserID,
+		UserUUID:  user.UUID,
 		StartDate: now,
-		EndDate:   endDate,
+		EndDate:   initialEnd,
 	}
 
 	if err := CreateSubscription(ctx, db, sub); err != nil {
 		t.Fatalf("Error creating subscription: %v", err)
 	}
-	t.Logf("The subscription is valid until %v", endDate)
 
-	err = ExtendSubscription(ctx, db, user.UserID, 7)
+	t.Logf("Initial end date: %v", initialEnd)
+
+	err = ExtendSubscription(ctx, db, user.UUID, 7)
 	if err != nil {
-		t.Fatalf("Error renewing subscription: %v", err)
+		t.Fatalf("Error extending subscription: %v", err)
 	}
 
-	got, err := GetSubscriptionByUserID(ctx, db, user.UserID)
+	got, err := GetSubscriptionByUserUUID(ctx, db, user.UUID)
 	if err != nil {
-		t.Fatalf("Failed to get subscription: %v", err)
+		t.Fatalf("Failed to get subscription after extension: %v", err)
 	}
 
-	t.Logf("After renewal, the subscription is valid until %v", got.EndDate)
+	t.Logf("After extension, subscription valid until: %v", got.EndDate)
 }
