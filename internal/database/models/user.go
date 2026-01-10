@@ -3,11 +3,13 @@ package models
 import "time"
 
 type User struct {
-	UserID    int64     `gorm:"column:user_id;unique;not null;index"`
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UUID       string    `gorm:"primaryKey;column:uuid;type:varchar(36);unique;not null;index"`
+	TelegramID *int64    `gorm:"column:tg_id;uniqueIndex"`
+	CreatedAt  time.Time `gorm:"autoCreateTime"`
+	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
 
-	Subscriptions []Subscription `gorm:"foreignKey:UserID;references:UserID;constraint:OnDelete:CASCADE"`
-	Admin         *Admin         `gorm:"foreignKey:UserID;references:UserID"`
+	Subscriptions []Subscription `gorm:"foreignKey:UserUUID;references:UUID;constraint:OnDelete:CASCADE"`
+	Admin         *Admin         `gorm:"foreignKey:UUID;references:UserUUID"`
 }
 
 func (User) TableName() string {

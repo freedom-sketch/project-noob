@@ -1,11 +1,10 @@
 package models
 
 type Admin struct {
-	ID     uint   `gorm:"primaryKey;autoIncrement"`
-	Name   string `gorm:"type:text;unique"`
-	UserID int64  `gorm:"not null;index"`
+	Name     string `gorm:"type:text;unique;not null"`
+	UserUUID string `gorm:"column:user_uuid;type:varchar(36);not null;unique;index;constraint:OnDelete:CASCADE"`
 
-	User User `gorm:"foreignKey:UserID;references:UserID"`
+	User User `gorm:"foreignKey:UserUUID;references:UUID"`
 }
 
 func (Admin) TableName() string {
